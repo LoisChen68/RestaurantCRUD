@@ -47,4 +47,4 @@
 - Express 4.18.1
 - Express-Handlebars 3.0.0
 - Bootstrap 4.3.1
-- mongoose 5.9.7
+- mongoose 6.5.2
