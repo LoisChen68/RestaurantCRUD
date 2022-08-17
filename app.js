@@ -13,7 +13,7 @@ const restaurant = require('./models/restaurant')
 
 const app = express()
 const port = 3000
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGODB_URI)
 
 const db = mongoose.connection
 
@@ -25,8 +25,6 @@ db.once('open', () => {
   console.log('mongodb connected!')
 })
 
-// //載入餐廳.json
-// const restaurantData = require('./restaurant.json').results
 
 //設定模板引擎
 app.engine('handlebars', exphbs({ defaultLayout: 'main' }))
@@ -57,22 +55,6 @@ app.post('/restaurants', (req, res) => {
   Restaurant.create(req.body)
     .then(() => res.redirect('/'))
     .catch(error => console.log(error))
-
-  // const { name, name_en, category, image, location, phone, google_map, rating, description } = req.body
-
-  // return Restaurant.create({
-  //   name,
-  //   name_en,
-  //   category,
-  //   image,
-  //   location,
-  //   phone,
-  //   google_map,
-  //   rating,
-  //   description
-  // })
-  //   .then(() => res.redirect('/'))
-  //   .catch(error => console.log(error))
 })
 
 //設定餐廳詳細頁面動態路由
@@ -82,8 +64,6 @@ app.get('/restaurants/:id', (req, res) => {
     .lean()
     .then(restaurant => res.render('show', { restaurant }))
     .catch(error => console.log(error))
-  // const restaurant = restaurantData.find(restaurant => restaurant.id.toString() === req.params.restaurant_id)
-  // res.render('show', { restaurant })
 })
 
 //設定餐廳編輯頁面
@@ -93,8 +73,6 @@ app.get('/restaurants/:id/edit', (req, res) => {
     .lean()
     .then(restaurant => res.render('edit', { restaurant }))
     .catch(error => console.log(error))
-  // const restaurant = restaurantData.find(restaurant => restaurant.id.toString() === req.params.restaurant_id)
-  // res.render('show', { restaurant })
 })
 
 //將編輯過的餐廳資料回傳到資料庫
@@ -112,8 +90,6 @@ app.get('/restaurants/:id/edit', (req, res) => {
     .lean()
     .then(restaurant => res.render('edit', { restaurant }))
     .catch(error => console.log(error))
-  // const restaurant = restaurantData.find(restaurant => restaurant.id.toString() === req.params.restaurant_id)
-  // res.render('show', { restaurant })
 })
 
 //將編輯過的餐廳資料回傳到資料庫
@@ -136,11 +112,16 @@ app.post('/restaurants/:id/delete', (req, res) => {
 //設定搜尋功能
 app.get('/search', (req, res) => {
   const keyword = req.query.keyword.trim().toLowerCase()
-  const filterRestaurant = restaurantData.filter(data => {
-    return data.name.trim().toLowerCase().includes(keyword) ||
-      data.category.includes(keyword)
-  })
-  res.render('index', { restaurantData: filterRestaurant, keyword })
+  Restaurant.find()
+    .lean()
+    .then(restaurantData => {
+      const filterRestaurant = restaurantData.filter(data => {
+        return data.name.trim().toLowerCase().includes(keyword) ||
+          data.category.includes(keyword)
+      })
+      res.render('index', { restaurants: filterRestaurant, keyword })
+    })
+    .catch(error => console.log(error))
 })
 
 //設定監聽
